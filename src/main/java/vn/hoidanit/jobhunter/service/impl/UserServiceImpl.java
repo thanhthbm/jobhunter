@@ -5,9 +5,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.dto.*;
+import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.repository.CompanyRepository;
 import vn.hoidanit.jobhunter.repository.UserRepository;
+import vn.hoidanit.jobhunter.service.CompanyService;
 import vn.hoidanit.jobhunter.service.UserService;
 
 import java.util.List;
@@ -18,10 +24,12 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CompanyRepository companyRepository;
 
-    public UserServiceImpl(UserRepository userRepository,  PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository,  PasswordEncoder passwordEncoder, CompanyRepository companyRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.companyRepository = companyRepository;
     }
 
     @Override
@@ -29,7 +37,7 @@ public class UserServiceImpl implements UserService {
         // repo return Page type, so convert it to List
         Page<User> userPage = userRepository.findAll(spec, pageable);
         ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
-        Meta meta = new Meta();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
         meta.setPageSize(pageable.getPageSize());
         meta.setPages(userPage.getTotalPages());
@@ -46,6 +54,10 @@ public class UserServiceImpl implements UserService {
                         .gender(item.getGender())
                         .createdAt(item.getCreatedAt())
                         .updatedAt(item.getUpdatedAt())
+                        .company(new ResUserDTO.CompanyUser(
+                                item.getCompany() != null ? item.getCompany().getId() : 0,
+                                item.getCompany() != null ? item.getCompany().getName() : null
+                        ))
                         .build())
                 .collect(Collectors.toList());
         resultPaginationDTO.setResult(listUser);
@@ -63,6 +75,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User handleCreateUser(User user) {
+        if (user.getCompany() != null) {
+            Optional<Company> companyOptional = this.companyRepository.findById(user.getCompany().getId());
+            user.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
+
+        }
+
         return this.userRepository.save(user);
     }
 
@@ -74,6 +92,11 @@ public class UserServiceImpl implements UserService {
             currentUser.setAge(user.getAge());
             currentUser.setName(user.getName());
             currentUser.setGender(user.getGender());
+
+            if (currentUser.getCompany() != null) {
+                Optional<Company> companyOptional = this.companyRepository.findById(currentUser.getCompany().getId());
+                currentUser.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
+            }
 
             currentUser = this.userRepository.save(currentUser);
         }
@@ -104,6 +127,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResCreateUserDTO convertToResCreateUserDTO(User user) {
         ResCreateUserDTO resCreateUserDTO = new ResCreateUserDTO();
+        ResCreateUserDTO.CompanyUser com = new ResCreateUserDTO.CompanyUser();
+
         resCreateUserDTO.setId(user.getId());
         resCreateUserDTO.setName(user.getName());
         resCreateUserDTO.setEmail(user.getEmail());
@@ -111,12 +136,26 @@ public class UserServiceImpl implements UserService {
         resCreateUserDTO.setAddress(user.getAddress());
         resCreateUserDTO.setGender(user.getGender());
         resCreateUserDTO.setCreatedAt(user.getCreatedAt());
+
+        if (user.getCompany() != null) {
+            com.setId(user.getCompany().getId());
+            com.setName(user.getCompany().getName());
+            resCreateUserDTO.setCompany(com);
+        }
         return resCreateUserDTO;
     }
 
     @Override
     public ResUserDTO convertToResUserDTO(User user) {
         ResUserDTO resUserDTO = new ResUserDTO();
+        ResUserDTO.CompanyUser com = new ResUserDTO.CompanyUser();
+
+        if (user.getCompany() != null) {
+            com.setId(user.getCompany().getId());
+            com.setName(user.getCompany().getName());
+            resUserDTO.setCompany(com);
+        }
+
         resUserDTO.setId(user.getId());
         resUserDTO.setName(user.getName());
         resUserDTO.setEmail(user.getEmail());
@@ -131,6 +170,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResUpdateUserDTO convertToResUpdateUserDTO(User user) {
         ResUpdateUserDTO resUpdateUserDTO = new ResUpdateUserDTO();
+        ResUpdateUserDTO.CompanyUser com = new ResUpdateUserDTO.CompanyUser();
+
+        if (user.getCompany() != null) {
+            com.setId(user.getCompany().getId());
+            com.setName(user.getCompany().getName());
+            resUpdateUserDTO.setCompany(com);
+        }
+
         resUpdateUserDTO.setId(user.getId());
         resUpdateUserDTO.setName(user.getName());
         resUpdateUserDTO.setAge(user.getAge());

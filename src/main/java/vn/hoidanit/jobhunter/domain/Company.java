@@ -1,6 +1,7 @@
 package vn.hoidanit.jobhunter.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import vn.hoidanit.jobhunter.service.util.SecurityUtil;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,6 +27,14 @@ public class Company {
     private String description;
     private String address;
     private String logo;
+
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    @JsonIgnore //use this to ignore list users when fetching to avoid infinite loop
+    private List<User> users;
+
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Job> jobs;
 
 //    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;

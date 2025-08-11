@@ -1,4 +1,4 @@
-package vn.hoidanit.jobhunter.domain.dto;
+package vn.hoidanit.jobhunter.domain.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class LoginDTO {
+public class ReqLoginDTO {
     @NotBlank(message = "Username must not be blank")
     private String username;
 

@@ -4,9 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Company;
-import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
-
-import java.util.List;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 
 @Service
 public interface CompanyService {

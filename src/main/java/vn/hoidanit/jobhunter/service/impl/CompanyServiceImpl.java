@@ -5,20 +5,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Company;
-import vn.hoidanit.jobhunter.domain.dto.Meta;
-import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.CompanyRepository;
+import vn.hoidanit.jobhunter.repository.UserRepository;
 import vn.hoidanit.jobhunter.service.CompanyService;
 import vn.hoidanit.jobhunter.service.util.error.NotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository) {
+    public CompanyServiceImpl(CompanyRepository companyRepository,  UserRepository userRepository) {
         this.companyRepository = companyRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -40,7 +44,7 @@ public class CompanyServiceImpl implements CompanyService {
         Page<Company> companyPage = this.companyRepository.findAll(pageable);
 
         ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
-        Meta  meta = new Meta();
+        ResultPaginationDTO.Meta  meta = new ResultPaginationDTO.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
         meta.setPageSize(pageable.getPageSize());
         meta.setPages(companyPage.getTotalPages());
@@ -71,6 +75,10 @@ public class CompanyServiceImpl implements CompanyService {
         if(!companyOptional.isPresent()){
             throw new NotFoundException("Company not found");
         }
+        Company company = companyOptional.get();
+        List<User> users = this.userRepository.findByCompany(company);
+        this.userRepository.deleteAll(users);
+
         this.companyRepository.deleteById(id);
     }
 }

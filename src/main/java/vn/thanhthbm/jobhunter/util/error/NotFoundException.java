@@ -1,4 +1,4 @@
-package vn.hoidanit.jobhunter.service.util.error;
+package vn.thanhthbm.jobhunter.util.error;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

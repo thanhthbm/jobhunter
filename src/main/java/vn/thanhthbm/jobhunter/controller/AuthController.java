@@ -31,7 +31,7 @@ public class AuthController {
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
 
-  @Value("${developer.jwt.refresh-token-validity-in-seconds}")
+  @Value("${thanhthbm.jwt.refresh-token-validity-in-seconds}")
   private long refreshTokenExpiration;
 
   public AuthController(

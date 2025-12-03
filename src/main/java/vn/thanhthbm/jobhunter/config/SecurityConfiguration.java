@@ -33,7 +33,7 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
 
-  @Value("${developer.jwt.base64-secret}")
+  @Value("${thanhthbm.jwt.base64-secret}")
   private String jwtKey;
 
   @Bean

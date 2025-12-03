@@ -115,6 +115,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     }
     if (countPermissions > 0 && countRoles > 0 && countUsers > 0) {
       System.out.println(">>> SKIP INIT DATABASE ~ ALREADY HAVE DATA...");
+
     } else {
       System.out.println(">>> END INIT DATABASE");
     }

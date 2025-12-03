@@ -8,12 +8,15 @@ import com.turkraft.springfilter.parser.node.FilterNode;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import vn.thanhthbm.jobhunter.domain.Job;
+import vn.thanhthbm.jobhunter.domain.Notification;
 import vn.thanhthbm.jobhunter.domain.Resume;
 import vn.thanhthbm.jobhunter.domain.User;
 import vn.thanhthbm.jobhunter.domain.response.ResultPaginationDTO;
@@ -26,6 +29,7 @@ import vn.thanhthbm.jobhunter.repository.UserRepository;
 import vn.thanhthbm.jobhunter.util.SecurityUtil;
 
 @Service
+@RequiredArgsConstructor
 public class ResumeService {
   @Autowired
   FilterBuilder fb;
@@ -39,15 +43,8 @@ public class ResumeService {
   private final ResumeRepository resumeRepository;
   private final UserRepository userRepository;
   private final JobRepository jobRepository;
+  private final NotificationService notificationService;
 
-  public ResumeService(
-      ResumeRepository resumeRepository,
-      UserRepository userRepository,
-      JobRepository jobRepository) {
-    this.resumeRepository = resumeRepository;
-    this.userRepository = userRepository;
-    this.jobRepository = jobRepository;
-  }
 
   public Optional<Resume> fetchById(long id) {
     return this.resumeRepository.findById(id);
@@ -84,6 +81,18 @@ public class ResumeService {
 
   public ResUpdateResumeDTO update(Resume resume) {
     resume = this.resumeRepository.save(resume);
+
+    if (resume.getUser() != null){
+      String candidateEmail = resume.getUser().getEmail();
+
+      this.notificationService.createAndSendNotification(
+          candidateEmail,
+          "Trạng thái hồ sơ thay đổi",
+          "Hồ sơ " + resume.getJob().getName() + " đã chuyển sang " +resume.getStatus(),
+          "RESUME_UPDATE"
+      );
+    }
+
     ResUpdateResumeDTO res = new ResUpdateResumeDTO();
     res.setUpdatedAt(resume.getUpdatedAt());
     res.setUpdatedBy(resume.getUpdatedBy());

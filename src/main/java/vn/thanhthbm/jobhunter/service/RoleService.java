@@ -38,6 +38,11 @@ public class RoleService {
           .collect(Collectors.toList());
 
       List<Permission> dbPermissions = this.permissionRepository.findByIdIn(reqPermissions);
+      Permission fetchNotiPermission = this.permissionRepository.findByApiPathAndMethod("/api/v1/notification", "GET");
+      Permission markReadNotiPermission = this.permissionRepository.findByApiPathAndMethod("/api/v1/notification/{id}", "PUT");
+
+      dbPermissions.add(fetchNotiPermission);
+      dbPermissions.add(markReadNotiPermission);
       r.setPermissions(dbPermissions);
     }
 
